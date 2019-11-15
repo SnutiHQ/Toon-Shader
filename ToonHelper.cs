@@ -25,13 +25,19 @@ struct LightSet {
 public class ToonHelper : MonoBehaviour {
 
     // Params
+    [Header("In Editor")]
+    [SerializeField] Material material = null;
+    [SerializeField] bool pause = false;
+    [SerializeField] bool showGizmos = true;
+
+    [Header("Light Config")]
+    [SerializeField] Vector3 meshCenter = Vector3.zero;
+    [SerializeField] int maxLights = 6;
+
+    [Header("Shade check")]
     [SerializeField] bool raycast = true;
     [SerializeField] LayerMask raycastMask = new LayerMask();
     [SerializeField] float raycastFadeSpeed = 10f;
-    [SerializeField] Vector3 meshCenter = Vector3.zero;
-    [SerializeField] bool pause = false;
-    [SerializeField] bool showGizmos = true;
-    [SerializeField] int maxLights = 6;
 
     // State
     Vector3 posAbs;
@@ -40,18 +46,23 @@ public class ToonHelper : MonoBehaviour {
     // Refs
     SkinnedMeshRenderer skinRenderer;
     MeshRenderer meshRenderer;
-    Material material;
     Material tempMaterial;
 
     void Start() {
         skinRenderer = GetComponent<SkinnedMeshRenderer>();
         meshRenderer = GetComponent<MeshRenderer>();
-        if (skinRenderer) {
-            material = skinRenderer.material;
-        } else if (meshRenderer) {
-            material = meshRenderer.material;
-        }
         GetLights();
+    }
+
+    void OnValidate() {
+        if (material) {
+            skinRenderer = GetComponent<SkinnedMeshRenderer>();
+            meshRenderer = GetComponent<MeshRenderer>();
+            if (skinRenderer) skinRenderer.sharedMaterial = material;
+            if (meshRenderer) meshRenderer.sharedMaterial = material;
+            tempMaterial = null;
+            EditorUpdate();
+        }
     }
 
     // NOTE: If your game loads lights dynamically, this should be called to init new lights
@@ -101,7 +112,8 @@ public class ToonHelper : MonoBehaviour {
         // Revert to original material when paused
         if (pause) {
             if (tempMaterial) {
-                skinRenderer.sharedMaterial = material;
+                if (skinRenderer) skinRenderer.sharedMaterial = material;
+                if (meshRenderer) meshRenderer.sharedMaterial = material;
                 tempMaterial = null;
             }
             return;
@@ -113,9 +125,10 @@ public class ToonHelper : MonoBehaviour {
             if (!meshRenderer) meshRenderer = GetComponent<MeshRenderer>();
             if (skinRenderer) tempMaterial = new Material(skinRenderer.sharedMaterial);
             if (meshRenderer) tempMaterial = new Material(meshRenderer.sharedMaterial);
-            tempMaterial.name = "Generated Toon Shader";
+            tempMaterial.name = "Generated Material";
             if (skinRenderer) skinRenderer.sharedMaterial = tempMaterial;
             if (meshRenderer) meshRenderer.sharedMaterial = tempMaterial;
+
         }
 
         GetLights();
@@ -210,8 +223,6 @@ public class ToonHelper : MonoBehaviour {
 
         lightSet.inView = Mathf.Lerp(lightSet.inView, inView, fadeSpeed);
         lightSet.color *= Mathf.Clamp01(lightSet.inView);
-
-
 
         return lightSet;
     }
