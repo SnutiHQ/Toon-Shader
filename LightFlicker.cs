@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 
-public class Flicker : MonoBehaviour {
+public class LightFlicker : MonoBehaviour {
 
     // Params
     [SerializeField] float amountIntensity = 3f;
