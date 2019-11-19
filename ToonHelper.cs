@@ -17,7 +17,7 @@ struct LightSet {
         color = Color.black;
         color.a = 0.01f;
         atten = 0f;
-        inView = 1.1f; // Range -0.1 to 1.1 which is clamped 0-1 to fade faster
+        inView = 1.1f; // Range -0.1 to 1.1 which is clamped 0-1 for faster consistent fade
     }
 }
 
@@ -25,12 +25,7 @@ struct LightSet {
 public class ToonHelper : MonoBehaviour {
 
     // Params
-    [Header("In Editor")]
     [SerializeField] Material material = null;
-    [SerializeField] bool pause = false;
-    [SerializeField] bool showGizmos = true;
-
-    [Header("Light Config")]
     [SerializeField] Vector3 meshCenter = Vector3.zero;
     [SerializeField] int maxLights = 6;
 
@@ -46,23 +41,23 @@ public class ToonHelper : MonoBehaviour {
     // Refs
     SkinnedMeshRenderer skinRenderer;
     MeshRenderer meshRenderer;
-    Material tempMaterial;
 
     void Start() {
-        skinRenderer = GetComponent<SkinnedMeshRenderer>();
-        meshRenderer = GetComponent<MeshRenderer>();
+        Init();
         GetLights();
     }
 
     void OnValidate() {
-        if (material) {
-            skinRenderer = GetComponent<SkinnedMeshRenderer>();
-            meshRenderer = GetComponent<MeshRenderer>();
-            if (skinRenderer) skinRenderer.sharedMaterial = material;
-            if (meshRenderer) meshRenderer.sharedMaterial = material;
-            tempMaterial = null;
-            EditorUpdate();
-        }
+        Init();
+        Update();
+    }
+
+    void Init() {
+        if (!material) return;
+        skinRenderer = GetComponent<SkinnedMeshRenderer>();
+        meshRenderer = GetComponent<MeshRenderer>();
+        if (skinRenderer) skinRenderer.sharedMaterial = material;
+        if (meshRenderer) meshRenderer.sharedMaterial = material;
     }
 
     // NOTE: If your game loads lights dynamically, this should be called to init new lights
@@ -95,56 +90,31 @@ public class ToonHelper : MonoBehaviour {
     void Update() {
         posAbs = transform.position + meshCenter;
 
+        // Always update lighting while in editor
         if (Application.isEditor && !Application.isPlaying) {
-            EditorUpdate();
-        } else {
-            PlayUpdate();
-        }
-    }
-
-    void PlayUpdate() {
-        if (pause) return;
-        UpdateLighting(material);
-    }
-
-    // While in editor, don't modify source material directly, make a copy
-    void EditorUpdate() {
-        // Revert to original material when paused
-        if (pause) {
-            if (tempMaterial) {
-                if (skinRenderer) skinRenderer.sharedMaterial = material;
-                if (meshRenderer) meshRenderer.sharedMaterial = material;
-                tempMaterial = null;
-            }
-            return;
+            GetLights(); 
         }
 
-        // Create temporary material
-        if (!tempMaterial) {
-            if (!skinRenderer) skinRenderer = GetComponent<SkinnedMeshRenderer>();
-            if (!meshRenderer) meshRenderer = GetComponent<MeshRenderer>();
-            if (skinRenderer) tempMaterial = new Material(skinRenderer.sharedMaterial);
-            if (meshRenderer) tempMaterial = new Material(meshRenderer.sharedMaterial);
-            tempMaterial.name = "Generated Material";
-            if (skinRenderer) skinRenderer.sharedMaterial = tempMaterial;
-            if (meshRenderer) meshRenderer.sharedMaterial = tempMaterial;
-
-        }
-
-        GetLights();
-        UpdateLighting(tempMaterial);
+        UpdateMaterial();
     }
 
-    void UpdateLighting(Material mat) {
+    void UpdateMaterial() {
+        if (!material) return;
 
         // Refresh light data
         List<LightSet> sortedLights = new List<LightSet>();
-        foreach (LightSet lightSet in lightSets.Values) {
-            sortedLights.Add(CalcLight(lightSet));
+        if (lightSets != null) {
+            foreach (LightSet lightSet in lightSets.Values) {
+                sortedLights.Add(CalcLight(lightSet));
+            }
         }
 
-        // Sort lights by attenuation
-        sortedLights.Sort((x, y) => y.atten.CompareTo(x.atten));
+        // Sort lights by brightness
+        sortedLights.Sort((x, y) => {
+            float yBrightness = y.color.grayscale * y.atten;
+            float xBrightness = x.color.grayscale * x.atten;
+            return yBrightness.CompareTo(xBrightness);
+        });
 
         // Apply lighting
         int i = 1;
@@ -156,15 +126,15 @@ public class ToonHelper : MonoBehaviour {
             Color color = lightSet.color;
             color.a = Mathf.Clamp(lightSet.atten, 0.01f, 0.99f); // UV might wrap around if attenuation is >1 or 0<
 
-            mat.SetVector($"_L{i}_dir", lightSet.dir.normalized);
-            mat.SetColor($"_L{i}_color", color);
+            material.SetVector($"_L{i}_dir", lightSet.dir.normalized);
+            material.SetColor($"_L{i}_color", color);
             i++;
         }
 
         // Turn off the remaining light slots
         while (i <= maxLights) {
-            mat.SetVector($"_L{i}_dir", Vector3.up);
-            mat.SetColor($"_L{i}_color", Color.black);
+            material.SetVector($"_L{i}_dir", Vector3.up);
+            material.SetColor($"_L{i}_color", Color.black);
             i++;
         }
 
@@ -241,20 +211,7 @@ public class ToonHelper : MonoBehaviour {
         return Mathf.Clamp01(1.0f / (1.0f + 25f * dist * dist) * Mathf.Clamp01((1f - dist) * 5f));
     }
 
-    void OnDrawGizmos() {
-        if (!showGizmos) return;
-
-        // Visualise mesh center
-        Gizmos.color = Color.white;
+    private void OnDrawGizmosSelected() {
         Gizmos.DrawWireSphere(posAbs, 0.1f);
-
-        // Visualise lighting
-        if (lightSets != null) {
-            List<LightSet> tmp = new List<LightSet>(lightSets.Values);
-            foreach (LightSet lightSet in tmp) {
-                Gizmos.color = lightSet.color;
-                Gizmos.DrawRay(posAbs, lightSet.dir.normalized * lightSet.atten * 2f);
-            }
-        }
     }
 }
