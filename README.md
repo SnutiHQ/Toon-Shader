@@ -1,4 +1,4 @@
-# Awesome Toon
+# Awesome Toon Shader
 A Character concentric Toon Shader for Unity using Shader Graph.
 This shader use a C# helper script on the object to supply lighting data to the material.
 
