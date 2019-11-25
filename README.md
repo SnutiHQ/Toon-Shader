@@ -4,6 +4,11 @@ This shader use a C# helper script on the object to supply lighting data to the 
 
 ![](GifExample1.gif)
 
+### Tutorial
+Check out the tutorial for this shader on YouTube:
+- Part 1: https://youtu.be/g8eBXCgWwrk
+- Part 2: https://youtu.be/CVhyQHJPK7M (Unlisted)
+
 ### Awesomeness & Features
 - Supports multiple light sources and types
 - Adjustable shading bands
