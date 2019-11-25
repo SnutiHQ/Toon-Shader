@@ -21,6 +21,8 @@ Check out the tutorial for this shader on YouTube:
 - Doesn't receive shadows directly
 - Lights are relative to the character rather than the actual mesh surface position. This difference is usually not noticable, apart from when you are standing on top of a light source.
 
+![](GifExample2.gif)
+
 # How to use
 1. Apply the `AwesomeToonHelper` script to your character (On the Game object with the **Mesh renderer**)
 2. Create a material with the `AwesomeToon` shader, and set this as the `Material` input on the `AwesomeToonHelper` component.
