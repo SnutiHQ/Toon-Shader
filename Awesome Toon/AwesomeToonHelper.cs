@@ -27,10 +27,11 @@ namespace AwesomeToon {
 
         // Params
         [SerializeField] Material material = null;
+        [SerializeField] bool instanceMaterial = true;
         [SerializeField] Vector3 meshCenter = Vector3.zero;
         [SerializeField] int maxLights = 6;
 
-        [Header("Shade check")]
+        [Header("Recieve Shadow Check")]
         [SerializeField] bool raycast = true;
         [SerializeField] LayerMask raycastMask = new LayerMask();
         [SerializeField] float raycastFadeSpeed = 10f;
@@ -40,6 +41,7 @@ namespace AwesomeToon {
         Dictionary<int, LightSet> lightSets;
 
         // Refs
+        Material materialInstance;
         SkinnedMeshRenderer skinRenderer;
         MeshRenderer meshRenderer;
 
@@ -55,10 +57,17 @@ namespace AwesomeToon {
 
         void Init() {
             if (!material) return;
+            if (instanceMaterial) {
+                materialInstance = new Material(material);
+                materialInstance.name = "Instance of " + material.name;
+            } else {
+                materialInstance = material;
+            }
+
             skinRenderer = GetComponent<SkinnedMeshRenderer>();
             meshRenderer = GetComponent<MeshRenderer>();
-            if (skinRenderer) skinRenderer.sharedMaterial = material;
-            if (meshRenderer) meshRenderer.sharedMaterial = material;
+            if (skinRenderer) skinRenderer.sharedMaterial = materialInstance;
+            if (meshRenderer) meshRenderer.sharedMaterial = materialInstance;
         }
 
         // NOTE: If your game loads lights dynamically, this should be called to init new lights
@@ -67,7 +76,7 @@ namespace AwesomeToon {
                 lightSets = new Dictionary<int, LightSet>();
             }
 
-            Light[] lights = GameObject.FindObjectsOfType<Light>();
+            Light[] lights = FindObjectsOfType<Light>();
             List<int> newIds = new List<int>();
 
             // Initialise new lights
@@ -127,15 +136,15 @@ namespace AwesomeToon {
                 Color color = lightSet.color;
                 color.a = Mathf.Clamp(lightSet.atten, 0.01f, 0.99f); // UV might wrap around if attenuation is >1 or 0<
 
-                material.SetVector($"_L{i}_dir", lightSet.dir.normalized);
-                material.SetColor($"_L{i}_color", color);
+                materialInstance.SetVector($"_L{i}_dir", lightSet.dir.normalized);
+                materialInstance.SetColor($"_L{i}_color", color);
                 i++;
             }
 
             // Turn off the remaining light slots
             while (i <= maxLights) {
-                material.SetVector($"_L{i}_dir", Vector3.up);
-                material.SetColor($"_L{i}_color", Color.black);
+                materialInstance.SetVector($"_L{i}_dir", Vector3.up);
+                materialInstance.SetColor($"_L{i}_color", Color.black);
                 i++;
             }
 
@@ -182,7 +191,7 @@ namespace AwesomeToon {
                     break;
 
                 default:
-                    Debug.Log("Lighting type '" + light.type + "' not supported by Toon Helper");
+                    Debug.Log("Lighting type '" + light.type + "' not supported by Awesome Toon Helper (" + light.name + ").");
                     lightSet.atten = 0f;
                     break;
             }
@@ -200,9 +209,12 @@ namespace AwesomeToon {
 
         float TestInView(Vector3 dir, float dist) {
             if (!raycast) return 1.1f;
-            if (Physics.Raycast(posAbs, dir, dist, raycastMask)) {
+            RaycastHit hit;
+            if (Physics.Raycast(posAbs, dir, out hit, dist, raycastMask)) {
+                Debug.DrawRay(posAbs, dir.normalized * hit.distance, Color.red);
                 return -0.1f;
             } else {
+                Debug.DrawRay(posAbs, dir.normalized * dist, Color.green);
                 return 1.1f;
             }
         }
