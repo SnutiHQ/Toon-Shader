@@ -48,6 +48,6 @@ Depending on the lighting setup of your scene, you might have to delete the "Bak
 
 ### Shade detection doesn't work
 
-Raycasts need a mask to work, set it to "Default" and other relevant layers for it to detect the colliders.
+Raycasts need a mask to work, set it to `Default` and add other relevant layers to the mark for it to detect if light sources are obstructed.
 
 ![](./Gifs/Fix-Raycast.png)
