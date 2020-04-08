@@ -31,7 +31,16 @@ Check out the tutorial for this shader on YouTube:
 ### Material instancing (Sharing material between many characters)
 By default the script will take a copy of your material and apply it to the model. Any changes to this copy (instance) will not be retained, this allows many characters to share the same source material and have individual lighting data. If you are **making changes to the source material**, uncheck `instance material` temporarily.
 
-### Troubleshoot
+# Troubleshoot
+
+### Error: Could not find Sub Graph...
+
 If the `Awesome Toon Sub` node is not found in the `Awesome Toon` shader, delete it and add it back in again, then save.
 
-![](GifBrokenSubGraph.gif)
+![](GifFix-SubGraph.gif)
+
+### Everything looks bright and washedout
+
+Depending on the lighting setup of your scene, you might have to delete the "Baked GI" node for things to look right.
+
+![](GifFix-BakedGI.gif)
