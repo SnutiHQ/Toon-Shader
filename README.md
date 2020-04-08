@@ -3,7 +3,7 @@ A character focused Toon Shader for Unity using Shader Graph. Using a C# helper 
 
 Improvements, forks and pull requests are welcome. Be sure to check out the tutorial to follow the process of building this shader from scratch.
 
-![](GifExample1.gif)
+![](./Gifs/GifExample1.gif)
 
 ### Tutorial
 How to build this shader from scratch:
@@ -21,7 +21,7 @@ How to build this shader from scratch:
 - Doesn't receive shadows directly, but fakes it by turning light sources off/on, by testing visibility with raycasting.
 - Lighting is relative to the mesh center rather than the mesh surface position. This difference is usually not noticable, apart from when you are standing on top of a light source.
 
-![](GifExample2.gif)
+![](./Gifs/GifExample2.gif)
 
 # How to use
 1. Apply the `AwesomeToonHelper` script to your character (On the Game object with the **Mesh renderer**)
@@ -38,10 +38,10 @@ By default the script will take a copy of your material and apply it to the mode
 
 If the `Awesome Toon Sub` node is not found in the `Awesome Toon` shader, delete it and add it back in again, then save.
 
-![](GifFix-SubGraph.gif)
+![](./Gifs/GifFix-SubGraph.gif)
 
 ### Everything looks bright and washedout
 
 Depending on the lighting setup of your scene, you might have to delete the "Baked GI" node for things to look right.
 
-![](GifFix-BakedGI.gif)
+![](./Gifs/GifFix-BakedGI.gif)
