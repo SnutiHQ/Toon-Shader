@@ -1,24 +1,25 @@
 # Awesome Toon Shader
-A Character concentric Toon Shader for Unity using Shader Graph.
-This shader use a C# helper script on the object to supply lighting data to the material.
+A character focused Toon Shader for Unity using Shader Graph. Using a C# helper script on the object to supply lighting data to the material, making it flexible and programmable. While it's not the most optimised and ideal approach for every scenario, it's a different take on toon shading and passing lighting data.
+
+Improvements, forks and pull requests are welcome. Be sure to check out the tutorial to follow the process of building this shader from scratch.
 
 ![](GifExample1.gif)
 
 ### Tutorial
-Check out the tutorial for this shader on YouTube:
+How to build this shader from scratch:
 - Part 1: https://youtu.be/g8eBXCgWwrk
-- Part 2: https://youtu.be/CVhyQHJPK7M (Unlisted)
+- Part 2: https://youtu.be/CVhyQHJPK7M
 
 ### Awesomeness & Features
 - Supports multiple light sources and types.
 - Adjustable shading bands.
 - Beautiful gloss and Fresnel effects.
-- Shade detection with Raycasting ("faked" shadows).
+- Shade detection with Raycasting ("faking" reciving shadows on an unlit material).
 
 ### Drawbacks
-- Not ideal for enviroment shading.
-- Doesn't receive shadows directly, but fakes it by turning light sources off/on with raycasting.
-- Lights are relative to the mesh center rather than the mesh surface position. This difference is usually not noticable, apart from when you are standing on top of a light source.
+- Not ideal for enviroment shading (In it's current configuration, could be repurposed to work better).
+- Doesn't receive shadows directly, but fakes it by turning light sources off/on, by testing visibility with raycasting.
+- Lighting is relative to the mesh center rather than the mesh surface position. This difference is usually not noticable, apart from when you are standing on top of a light source.
 
 ![](GifExample2.gif)
 
